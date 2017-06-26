@@ -52,19 +52,22 @@ export default class Grid extends Collection {
             if(filteredResults.length) {
                 this.deleteEqualHorizontal(filteredResults[0]).then(() => {
                     if(isNotEndCol) {
-                        this.searchFromHead(index)
+                        this.searchFromHead(index).then(() => {
+                            resolve()
+                        })
                     } else {
                         resolve()
                     }
                 })
             } else {
                 if(isNotEndCol) {
-                    this.searchFromHead(nextIndex)
+                    this.searchFromHead(nextIndex).then(() => {
+                        resolve()
+                    })
                 } else {
                     resolve()
                 }
             }
-            resolve()
         });
     }
 
@@ -100,9 +103,7 @@ export default class Grid extends Collection {
     }
 
     deletes(index, destIndex){
-        this.delay().then(() => {
-            return this.verticalWork(index)
-        }).then(() => {
+        this.verticalWork(index).then(() => {
             return this.verticalWork(destIndex)
         }).then(() => {
             return this.horizontalWork(index)
@@ -112,11 +113,11 @@ export default class Grid extends Collection {
     }
 
     deleteEqualHorizontal(identical) {
-        if(this.hasIdentical(identical)) {
-            identical.forEach((index)=>{
+        return new Promise((resolve) => {
+            identical.forEach((index) => {
                 this.collection[index].change("color", 0xffffff);
             });
-            return this.delay(900).then(()=> {
+            return this.delay(800).then(()=> {
                 this.change("identical", identical.map((index) =>{
                     const model = this.collection[index];
                     return balles[model.props.type]
@@ -138,40 +139,41 @@ export default class Grid extends Collection {
                 this.collection.forEach((model, index)=> {
                     model.change("index", index)
                 });
-                return this.delay()
+                resolve()
             })
-        }
+        });
     }
 
     deleteEqualVertical(currentIndex, identical){
-        if(this.hasIdentical(identical)){
-            identical.sort((a,b) => a > b);
-            identical.forEach((index)=>{
-                this.collection[index].change("color", 0xffffff);
-            });
-            this.delay(900).then(()=> {
-                const toDelete = this.collection.splice(identical[0], identical.length);
-                toDelete.forEach((model) => {
-                    model.change("display", false)
+        return new Promise((resolve, reject) => {
+            if(this.hasIdentical(identical)){
+                identical.sort((a,b) => a > b);
+                identical.forEach((index)=>{
+                    this.collection[index].change("color", 0xffffff);
                 });
-
-                let firstColIndex = currentIndex - (currentIndex % GRID_SIZE);
-                identical.forEach((model, index)=>{
-                    const newModel = new this.Model({
-                        index: firstColIndex,
-                        type: TYPES[randomInteger(2)]
+                this.delay(900).then(() => {
+                    const toDelete = this.collection.splice(identical[0], identical.length);
+                    toDelete.forEach((model) => {
+                        model.change("display", false)
                     });
-                    this.collection.splice(firstColIndex, 0, newModel);
-                    firstColIndex++;
-                    this.dispatch("add", newModel)
-                });
-                this.collection.forEach((model, index)=>{
-                    model.change("index", index)
-                })
-                return this.delay()
-            });
 
-        }
+                    let firstColIndex = currentIndex - (currentIndex % GRID_SIZE);
+                    identical.forEach((model, index)=>{
+                        const newModel = new this.Model({
+                            index: firstColIndex,
+                            type: TYPES[randomInteger(2)]
+                        });
+                        this.collection.splice(firstColIndex, 0, newModel);
+                        firstColIndex++;
+                        this.dispatch("add", newModel)
+                    });
+                    this.collection.forEach((model, index)=>{
+                        model.change("index", index)
+                    });
+                    resolve()
+                });
+            }
+        });
     }
 
     hasIdentical(arr){
