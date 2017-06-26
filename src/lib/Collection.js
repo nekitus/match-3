@@ -1,4 +1,6 @@
 import {GRID_SIZE} from '../views/Layout'
+import {randomInteger} from './helpers'
+import {TYPES} from '../index'
 
 export default class Collection {
     constructor(props){
@@ -8,11 +10,13 @@ export default class Collection {
         this.collection = [];
         this.line = []
     }
+
     add(){
         let [model, ...args] = arguments;
         this.collection.push(model);
         this.dispatch("add", model, ...args)
     }
+
     swap(index, destIndex){
         const destModel = this.collection[destIndex];
         this.collection[destIndex] = this.collection[index];
@@ -22,98 +26,166 @@ export default class Collection {
         this.collection[index].change("index", index);
     }
 
-    onChange(index, destIndex){
+    onChange(index, destIndex) {
         this.swap(index, destIndex);
-        this.search(index, destIndex);
+
+        const results = [...this.search(index),...this.search(destIndex)];
+        const filteredResults = results.filter((result) => {
+            return this.hasIdentical(result)
+        });
+
+        if(filteredResults.length) {
+            const identicalArr = filteredResults[0];
+            this.deleteEqualHorizontal(identicalArr).then(() => {
+                this.searchFromHead(index);
+            })
+        } else {
+            this.delay(500).then(() => this.swap(destIndex, index))
+        }
     }
-    search(index, destIndex){
-        // vertical
-        this.line.push(index);
-        this.searchVertical(index);
-        this.deleteEqualVertical(index);
 
-        this.line.push(destIndex);
-        this.searchVertical(destIndex);
-        this.deleteEqualVertical(destIndex);
+    searchFromHead(index){
+        console.log(index)
+        const results = [
+            this.searchVertical(index),
+            this.searchHorizontal(index)
+        ];
+        const filteredResults = results.filter((result) => {
+            return this.hasIdentical(result)
+        });
+        const nextIndex = index - 1;
+        const columnIndex = index % GRID_SIZE;
+        const columnNextIndex = nextIndex % GRID_SIZE;
+        const isNotEndCol = !(columnNextIndex > columnIndex) && nextIndex >= 0;
 
-        // horisontal
-        this.line.push(index);
-        this.searchHorizontal(index);
-        this.deleteEqualHorizontal(index);
 
-        this.line.push(destIndex);
-        this.searchHorizontal(destIndex);
-        this.deleteEqualHorizontal(destIndex)
+        if(filteredResults.length) {
+            this.deleteEqualHorizontal(filteredResults[0]).then(() => {
+                if(isNotEndCol) {
+                    this.searchFromHead(nextIndex)
+                }
+            })
+        } else {
+            if(isNotEndCol) {
+                this.searchFromHead(nextIndex)
+            }
+        }
     }
-    deleteEqualHorizontal(currentIndex){
-        if(this.line.length > 2){
-            this.line.forEach((index)=>{
-                let firstColIndex = index - (index % GRID_SIZE);
 
-                const newModel = new this.Model({
-                    index: firstColIndex,
-                    type: "circle"
+    search(index) {
+        return [
+            this.searchVertical(index),
+            this.searchHorizontal(index)
+        ]
+    }
+
+    delay(ms) {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, ms || 0)
+        })
+    }
+
+    verticalWork(index) {
+        const identical = this.searchVertical(index);
+        if (this.hasIdentical(identical)) {
+            return this.deleteEqualVertical(index, identical);
+        }
+        return this.delay()
+    }
+
+    horizontalWork(index) {
+        const identical = this.searchHorizontal(index);
+        if (this.hasIdentical(identical)) {
+            return this.deleteEqualHorizontal(identical);
+        }
+        return this.delay()
+    }
+
+    deletes(index, destIndex){
+        this.delay().then(() => {
+            return this.verticalWork(index)
+        }).then(() => {
+            return this.verticalWork(destIndex)
+        }).then(() => {
+            return this.horizontalWork(index)
+        }).then(() => {
+            return this.horizontalWork(destIndex)
+        });
+    }
+
+    deleteEqualHorizontal(identical) {
+        if(this.hasIdentical(identical)) {
+            identical.forEach((index)=>{
+                this.collection[index].change("color", 0xffffff);
+            });
+            return this.delay(900).then(()=> {
+                identical.forEach((index)=> {
+                    let firstColIndex = index - (index % GRID_SIZE);
+
+                    const newModel = new this.Model({
+                        index: firstColIndex,
+                        type: TYPES[randomInteger(2)]
+                    });
+                    const model = this.collection[index];
+                    model.change("display", false);
+                    this.collection.splice(index, 1);
+                    this.collection.splice(firstColIndex, 0, newModel);
+                    this.dispatch("add", newModel)
                 });
-
-                const model = this.collection[index];
-                this.collection[index].change("color", "delete");
-                model.change("display", false);
-                this.collection.splice(index, 1);
-                this.collection.splice(firstColIndex, 0, newModel);
-                this.dispatch("add", newModel)
-            });
-            this.line.forEach((index)=>{
-            });
-            this.collection.forEach((model, index)=>{
-                model.change("index", index)
+                this.collection.forEach((model, index)=> {
+                    model.change("index", index)
+                });
+                return this.delay()
             })
         }
-        this.cleanEqual()
     }
-    deleteEqualVertical(currentIndex){
-        if(this.line.length > 2){
-            this.line.sort((a,b) => a > b);
-            this.line.forEach((index)=>{
-                this.collection[index].change("color", "delete");
-            });
 
-            const toDelete = this.collection.splice(this.line[0], this.line.length);
-            toDelete.forEach((model) => {
-                model.change("display", false)
+    deleteEqualVertical(currentIndex, identical){
+        if(this.hasIdentical(identical)){
+            identical.sort((a,b) => a > b);
+            identical.forEach((index)=>{
+                this.collection[index].change("color", 0xffffff);
             });
-
-            let firstColIndex = currentIndex - (currentIndex % GRID_SIZE);
-            this.line.forEach((model, index)=>{
-                const newModel = new this.Model({
-                    index: firstColIndex,
-                    type: "circle"
+            this.delay(900).then(()=> {
+                const toDelete = this.collection.splice(identical[0], identical.length);
+                toDelete.forEach((model) => {
+                    model.change("display", false)
                 });
-                this.collection.splice(firstColIndex, 0, newModel);
-                firstColIndex++;
-                this.dispatch("add", newModel)
+
+                let firstColIndex = currentIndex - (currentIndex % GRID_SIZE);
+                identical.forEach((model, index)=>{
+                    const newModel = new this.Model({
+                        index: firstColIndex,
+                        type: TYPES[randomInteger(2)]
+                    });
+                    this.collection.splice(firstColIndex, 0, newModel);
+                    firstColIndex++;
+                    this.dispatch("add", newModel)
+                });
+                this.collection.forEach((model, index)=>{
+                    model.change("index", index)
+                })
+                return this.delay()
             });
-            this.collection.forEach((model, index)=>{
-                model.change("index", index)
-            })
+
         }
-        this.cleanEqual()
     }
-    cleanEqual(){
-        this.line = [];
-    }
-    isEquals(){
-        return this.line.length > 2;
+
+    hasIdentical(arr){
+        return arr && arr.length > 2;
     }
 
     searchVertical(index){
-        this.searchUp(index);
-        this.searchDown(index);
+        return this.searchDown(index, this.searchUp(index, [index]));
     }
+
     searchHorizontal(index){
-        this.searchLeft(index);
-        this.searchRight(index)
+        return this.searchRight(index, this.searchLeft(index, [index]));
     }
-    searchDown(index) {
+
+    searchDown(index, identical = []) {
         const model = this.collection[index];
         const nextIndex = index + 1;
         const columnIndex = index % GRID_SIZE;
@@ -122,11 +194,14 @@ export default class Collection {
             return;
         }
         if(this.collection[nextIndex] && model.props.type === this.collection[nextIndex].props.type) {
-            this.line.push(nextIndex);
-            this.searchDown(nextIndex)
+            identical.push(nextIndex);
+            return this.searchDown(nextIndex, identical)
+        } else {
+            return identical;
         }
     }
-    searchUp(index){
+
+    searchUp(index,  identical = []){
         const model = this.collection[index];
         const nextIndex = index - 1;
         const columnIndex = index % GRID_SIZE;
@@ -136,24 +211,32 @@ export default class Collection {
         }
 
         if(this.collection[nextIndex] && model.props.type === this.collection[nextIndex].props.type) {
-            this.line.push(nextIndex);
-            this.searchUp(nextIndex)
+            identical.push(nextIndex);
+            return this.searchUp(nextIndex, identical);
+        } else {
+            return identical;
         }
     }
-    searchLeft(index) {
+
+    searchLeft(index, identical = []) {
         const model = this.collection[index];
         const nextIndex = index - 9;
         if(this.collection[nextIndex] && model.props.type === this.collection[nextIndex].props.type) {
-            this.line.push(nextIndex);
-            this.searchLeft(nextIndex)
+            identical.push(nextIndex);
+            return this.searchLeft(nextIndex, identical)
+        } else {
+            return identical
         }
     }
-    searchRight(index){
+
+    searchRight(index, identical = []){
         const model = this.collection[index];
         const nextIndex = index + 9;
         if(this.collection[nextIndex] && model.props.type === this.collection[nextIndex].props.type) {
-            this.line.push(nextIndex);
-            this.searchRight(nextIndex)
+            identical.push(nextIndex);
+            return this.searchRight(nextIndex, identical)
+        } else {
+            return identical
         }
     }
 

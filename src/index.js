@@ -1,38 +1,47 @@
-import initApp from './app/initApp';
 import Shape from './models/Shape';
-import Collection from './app/Collection';
-
+import Collection from './lib/Collection';
 import Layout from './views/Layout'
+import {randomInteger} from './lib/helpers'
 
-const TYPES = ["rect", "circle", "triangle"];
+export const TYPES = ["rect", "circle", "triangle"];
 
-const collection = initCollection();
+const schema = [
+    [0,1,2,0],
+    [2,1,0,2],
+    [0,1,1,0]
+];
 
 window.onload = function(){
-    let layout = new Layout({model: collection});
+    initialize()
 };
 
+function initialize(){
+    const collection = new Collection({Model: Shape});
+    let layout = new Layout({model: collection});
 
-function initCollection(){
-    const collection = new Collection();
+    const getTypeId = typeId();
+
     for(let i = 0; i < 9; i++) {
         for(let j = 0; j < 9; j++) {
-            let randomShapeType = TYPES[randomInteger(2)];
+            let s = getTypeId();
+            let randomShapeType = TYPES[s];
             let model = new Shape({
                 index: i * 9 + j,
                 type: randomShapeType
             });
-            collection.add(model);
+            collection.add(model, i, j);
         }
     }
-    return collection;
 }
 
-function randomInteger(max) {
-    var rand = Math.random() * (max + 1);
-    rand = Math.floor(rand);
-    return rand;
+function typeId(){
+    let index = randomInteger(3);
+    let schemaIndex = randomInteger(2);
+    return function(){
+        if(index > 3) {
+            index = 0;
+            schemaIndex = schemaIndex > 1 ? 0 : schemaIndex + 1
+        }
+        return schema[schemaIndex][index++]
+    }
 }
-
-
-initApp();
