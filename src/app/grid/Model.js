@@ -22,38 +22,50 @@ export default class Grid extends Collection {
         if(filteredResults.length) {
             const identicalArr = filteredResults[0];
             this.deleteEqualHorizontal(identicalArr).then(() => {
-                this.searchFromHead(index);
+                this.searchEach(identicalArr);
             })
         } else {
             this.delay(500).then(() => this.swap(destIndex, index))
         }
     }
+    searchEach(identicalArr){
+        this.searchFromHead(identicalArr.pop()).then(() => {
+            identicalArr.length && this.searchEach(identicalArr)
+        })
+    }
 
     searchFromHead(index){
-        const results = [
-            this.searchVertical(index),
-            this.searchHorizontal(index)
-        ];
-        const filteredResults = results.filter((result) => {
-            return this.hasIdentical(result)
-        });
-        const nextIndex = index - 1;
-        const columnIndex = index % GRID_SIZE;
-        const columnNextIndex = nextIndex % GRID_SIZE;
-        const isNotEndCol = !(columnNextIndex > columnIndex) && nextIndex >= 0;
+        return new Promise((resolve, reject) => {
+            const results = [
+                this.searchVertical(index),
+                this.searchHorizontal(index)
+            ];
+            const filteredResults = results.filter((result) => {
+                return this.hasIdentical(result)
+            });
+            const nextIndex = index - 1;
+            const columnIndex = index % GRID_SIZE;
+            const columnNextIndex = nextIndex % GRID_SIZE;
+            const isNotEndCol = !(columnNextIndex > columnIndex) && nextIndex >= 0;
 
 
-        if(filteredResults.length) {
-            this.deleteEqualHorizontal(filteredResults[0]).then(() => {
+            if(filteredResults.length) {
+                this.deleteEqualHorizontal(filteredResults[0]).then(() => {
+                    if(isNotEndCol) {
+                        this.searchFromHead(index)
+                    } else {
+                        resolve()
+                    }
+                })
+            } else {
                 if(isNotEndCol) {
                     this.searchFromHead(nextIndex)
+                } else {
+                    resolve()
                 }
-            })
-        } else {
-            if(isNotEndCol) {
-                this.searchFromHead(nextIndex)
             }
-        }
+            resolve()
+        });
     }
 
     search(index) {
