@@ -5,9 +5,9 @@ import {randomInteger} from './lib/helpers'
 
 
 const schema = [
-    [0,1,2,0],
-    [2,1,0,2],
-    [0,1,1,0]
+    [0,1,2],
+    [2,1,0],
+    [1,0,2]
 ];
 
 window.onload = function(){
@@ -34,13 +34,24 @@ function initialize(){
 }
 
 function typeId(){
-    let index = randomInteger(3);
-    let schemaIndex = randomInteger(2);
+    let index = 0;
+    let count = 0;
+    let schemaIndex = 0;
     return function(){
-        if(index > 3) {
+        const result = schema[schemaIndex][index];
+        index++;
+        count++;
+        if(index > 2) {
             index = 0;
-            schemaIndex = schemaIndex > 1 ? 0 : schemaIndex + 1
+            if(count > 8) {
+                count = 0;
+                schemaIndex++;
+            }
+            if(schemaIndex > 2) {
+                schemaIndex = 0
+            }
         }
-        return schema[schemaIndex][index++]
+
+        return result
     }
 }
