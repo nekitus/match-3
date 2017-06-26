@@ -1,39 +1,53 @@
 import pixi from 'pixi.js'
 
-import Circle from './Circle'
-import Rect from './Rect'
-import Triangle from './Triangle'
+import Circle from '../shape/Circle'
+import Rect from '../shape/Rect'
+import Triangle from '../shape/Triangle'
+import Counter from '../counter/View'
+import CounterModel from '../counter/Model'
+
 
 export const GRID_SIZE = 9;
 export const CELL_SIZE = 25;
+export const TYPES = ["rect", "circle", "triangle"];
 
 export default class Layout {
     constructor(params) {
         this.change = this.change.bind(this);
+        this.identical = this.identical.bind(this);
         this.add = this.add.bind(this);
 
         this.model = params.model;
-
-        this.app = new PIXI.Application(800, 600, {backgroundColor : 0x1099bb});
+        this.app = new PIXI.Application(240, 280, {backgroundColor : 0x1099bb});
         document.body.appendChild(this.app.view);
         this.container = new PIXI.Container();
-
         this.children = [];
+        this.counterModel = new CounterModel();
+        const counter = this.initCounter();
+        this.container.addChild(counter.graphics);
+
         this.model.bind("add", this.add);
+        this.model.bind("identical", this.identical);
+
         this.app.stage.addChild(this.container);
         this.app.ticker.add(function() {
         });
     }
-    render(){
+    render() {
         this.children.forEach((child) => {
             child.render()
         })
     }
-    add(model, row, column){
-        //const position = {
-        //    x: CELL_SIZE * row,
-        //    y: CELL_SIZE * column
-        //};
+    initCounter() {
+        return new Counter({
+            model: this.counterModel,
+            container: this.container
+        })
+    }
+    identical(pointsArray) {
+        this.counterModel.addPoints(pointsArray);
+    }
+    add(model) {
         const config = {
             model,
             container: this.container,
@@ -53,7 +67,7 @@ export default class Layout {
         }
     }
 
-    change(eventType, index){
+    change(eventType, index) {
         let destIndex;
         switch (eventType) {
             case "left":
@@ -70,9 +84,5 @@ export default class Layout {
 
         }
         this.model.onChange(index, destIndex);
-    }
-
-    createShapes(){
-
     }
 }

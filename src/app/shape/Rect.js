@@ -1,4 +1,4 @@
-import Shape from './Shape'
+import Shape from '../../views/Shape'
 
 export default class Circle extends Shape {
     constructor(props) {

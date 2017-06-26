@@ -1,7 +1,7 @@
 import {
     CELL_SIZE,
     GRID_SIZE
-} from "./Layout";
+} from "../app/grid/View";
 
 export default class Shape  {
     constructor(props){

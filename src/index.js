@@ -1,9 +1,8 @@
-import Shape from './models/Shape';
-import Collection from './lib/Collection';
-import Layout from './views/Layout'
+import Shape from './app/shape/Model';
+import Grid from './app/grid/Model';
+import Layout, {GRID_SIZE, TYPES} from './app/grid/View';
 import {randomInteger} from './lib/helpers'
 
-export const TYPES = ["rect", "circle", "triangle"];
 
 const schema = [
     [0,1,2,0],
@@ -16,17 +15,17 @@ window.onload = function(){
 };
 
 function initialize(){
-    const collection = new Collection({Model: Shape});
+    const collection = new Grid({Model: Shape});
     let layout = new Layout({model: collection});
 
     const getTypeId = typeId();
 
-    for(let i = 0; i < 9; i++) {
-        for(let j = 0; j < 9; j++) {
+    for(let i = 0; i < GRID_SIZE; i++) {
+        for(let j = 0; j < GRID_SIZE; j++) {
             let s = getTypeId();
             let randomShapeType = TYPES[s];
             let model = new Shape({
-                index: i * 9 + j,
+                index: i * GRID_SIZE + j,
                 type: randomShapeType
             });
             collection.add(model, i, j);
