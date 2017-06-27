@@ -1,4 +1,5 @@
 import Model from "../../lib/Model"
+
 export default class Shape extends Model {
     constructor(props) {
         super(props);

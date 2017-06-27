@@ -3,7 +3,11 @@ import {randomInteger} from '../../lib/helpers'
 
 const GRID_SIZE = 9;
 const TYPES = ["rect", "circle", "triangle"];
-const balles = {rect: 10, triangle: 20, circle: 30};
+const balles = {
+    rect: 10,
+    triangle: 20,
+    circle: 30
+};
 
 
 export default class Grid extends Collection {
@@ -136,8 +140,8 @@ export default class Grid extends Collection {
                     this.collection.splice(firstColIndex, 0, newModel);
                     this.dispatch("add", newModel)
                 });
-                this.collection.forEach((model, index)=> {
-                    model.change("index", index)
+                this.collection.forEach((model, index) => {
+                    model.change("index", index);
                 });
                 resolve()
             })

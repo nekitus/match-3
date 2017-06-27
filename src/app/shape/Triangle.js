@@ -5,8 +5,9 @@ export default class Circle extends Shape {
         super(props);
     }
     render() {
+        const model = this.props.model;
         if(this.display){
-            this.graphics.beginFill(this.model.props.color || 0xa6cc55);
+            this.graphics.beginFill(model.props.color || 0xa6cc55);
             this.graphics.moveTo(10,10);
             this.graphics.lineTo(30, 10);
             this.graphics.lineTo(20, 30);

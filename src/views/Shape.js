@@ -1,10 +1,12 @@
+import View from '../lib/View'
 import {
     CELL_SIZE,
     GRID_SIZE
 } from "../app/grid/View";
 
-export default class Shape  {
+export default class Shape extends View {
     constructor(props){
+        super(props);
         this.onDragStart = this.onDragStart.bind(this);
         this.onDragEnd = this.onDragEnd.bind(this);
         this.onDragMove = this.onDragMove.bind(this);
@@ -12,16 +14,13 @@ export default class Shape  {
         this.changeColor = this.changeColor.bind(this);
         this.changeDisplay = this.changeDisplay.bind(this);
 
-        this.props = props;
-        this.model = props.model;
-        this.container = props.container;
         this.position = {};
         this.display = true;
 
         this.graphics = new PIXI.Graphics();
-        this.changePosition(this.model.getIndex());
+        this.changePosition(this.props.model.getIndex());
         this.render();
-        this.container.addChild(this.graphics);
+        this.props.container.addChild(this.graphics);
         this.graphics.interactive = true;
         this.graphics.buttonMode = true;
         this.graphics
@@ -32,9 +31,9 @@ export default class Shape  {
             .on('mousemove', this.onDragMove)
             .on('touchmove', this.onDragMove);
 
-        this.model.bind("index",this.changePosition);
-        this.model.bind("color",this.changeColor);
-        this.model.bind("display",this.changeDisplay);
+        this.props.model.bind("index",this.changePosition);
+        this.props.model.bind("color",this.changeColor);
+        this.props.model.bind("display",this.changeDisplay);
     }
     changeDisplay(value){
         this.display = value;
@@ -65,7 +64,7 @@ export default class Shape  {
         if (this.dragging) {
             var newPosition = this.data.getLocalPosition(this.graphics.parent);
             let eventType;
-            const index = this.model.getIndex();
+            const index = this.props.model.getIndex();
             if(newPosition.x < this.position.x - 10) {
                 this.dragging = false;
                 eventType = "left";
