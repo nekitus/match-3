@@ -1,12 +1,15 @@
-export class Container {
-    constructor() {
-        this.children = []
+import View from '../lib/View'
+
+export class Container extends View {
+    constructor(props) {
+        super(props);
+        this.children = [];
+        this.container = new PIXI.Container();
+        this.props.container.addChild(this.container)
     }
 
-    draw() {
-        var container = new PIXI.Container();
-        graphics.beginFill(0xe74c3c); // Red
-        graphics.drawCircle(x, y, 20); // drawCircle(x, y, radius)
+    render() {
+
     }
     add(child) {
         this.children.push(child)

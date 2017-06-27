@@ -1,5 +1,6 @@
 import pixi from 'pixi.js'
 
+import View from '../../lib/View'
 import Circle from '../shape/Circle'
 import Rect from '../shape/Rect'
 import Triangle from '../shape/Triangle'
@@ -11,13 +12,15 @@ export const GRID_SIZE = 9;
 export const CELL_SIZE = 25;
 export const TYPES = ["rect", "circle", "triangle"];
 
-export default class Layout {
-    constructor(params) {
+export default class Layout extends View {
+    constructor(props) {
+        super(props)
+        const model = this.props.model;
+
         this.change = this.change.bind(this);
         this.identical = this.identical.bind(this);
         this.add = this.add.bind(this);
 
-        this.model = params.model;
         this.app = new PIXI.Application(240, 280, {backgroundColor : 0x1099bb});
         document.body.appendChild(this.app.view);
         this.container = new PIXI.Container();
@@ -26,8 +29,8 @@ export default class Layout {
         const counter = this.initCounter();
         this.container.addChild(counter.graphics);
 
-        this.model.bind("add", this.add);
-        this.model.bind("identical", this.identical);
+        model.bind("add", this.add);
+        model.bind("identical", this.identical);
 
         this.app.stage.addChild(this.container);
         this.app.ticker.add(function() {
@@ -83,6 +86,6 @@ export default class Layout {
                 destIndex = index + 1;
 
         }
-        this.model.onChange(index, destIndex);
+        this.props.model.onChange(index, destIndex);
     }
 }
