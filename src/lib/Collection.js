@@ -1,3 +1,5 @@
+let some =  mixins => target => mixin(target.prototype, mixins);
+
 export default class Collection {
     constructor(props){
         this.listeners = [];

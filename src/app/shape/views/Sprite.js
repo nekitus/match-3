@@ -1,6 +1,6 @@
-import Shape from '../../views/Shape'
+import View from '../lib/View'
 
-export default class Circle extends Shape {
+export default class Sprite {
     constructor(props) {
         super(props);
 

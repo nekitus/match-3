@@ -1,8 +1,6 @@
 import Collection from '../../lib/Collection'
 import {randomInteger} from '../../lib/helpers'
-
-const GRID_SIZE = 9;
-const TYPES = ["rect", "circle", "triangle"];
+import {TYPES, GRID_SIZE} from './View'
 const balles = {
     rect: 10,
     triangle: 20,
@@ -18,18 +16,25 @@ export default class Grid extends Collection {
     onChange(index, destIndex) {
         this.swap(index, destIndex);
 
-        const results = [...this.search(index),...this.search(destIndex)];
+        const res1 = this.search(index);
+        const res2 = this.search(destIndex);
+        console.log(res1)
+        console.log(res2)
+        const results = [...res1, ...res2];
+
         const filteredResults = results.filter((result) => {
             return this.hasIdentical(result)
         });
 
         if(filteredResults.length) {
             const identicalArr = filteredResults[0];
+            //TODO: выдести удаление в контроллер или вью
+            // удалять модели из коллекции примитивными методами, также выполнять поиск (отдать сложные манипуляции в контроллер)
             this.deleteEqualHorizontal(identicalArr).then(() => {
                 this.searchEach(identicalArr);
             })
         } else {
-            this.delay(500).then(() => this.swap(destIndex, index))
+            //this.delay(500).then(() => this.swap(destIndex, index))
         }
     }
     searchEach(identicalArr){
@@ -52,12 +57,14 @@ export default class Grid extends Collection {
             const columnNextIndex = nextIndex % GRID_SIZE;
             const isNotEndCol = !(columnNextIndex > columnIndex) && nextIndex >= 0;
 
-
             if(filteredResults.length) {
                 this.deleteEqualHorizontal(filteredResults[0]).then(() => {
                     if(isNotEndCol) {
+
                         this.searchFromHead(index).then(() => {
-                            resolve()
+                            setTimeout(()=>{
+                                resolve()
+                            },1000)
                         })
                     } else {
                         resolve()
@@ -74,14 +81,6 @@ export default class Grid extends Collection {
             }
         });
     }
-
-    search(index) {
-        return [
-            this.searchVertical(index),
-            this.searchHorizontal(index)
-        ]
-    }
-
     delay(ms) {
         return new Promise((resolve) => {
             setTimeout(() => {
@@ -90,44 +89,33 @@ export default class Grid extends Collection {
         })
     }
 
-    verticalWork(index) {
-        const identical = this.searchVertical(index);
-        if (this.hasIdentical(identical)) {
-            return this.deleteEqualVertical(index, identical);
-        }
-        return this.delay()
-    }
-
-    horizontalWork(index) {
-        const identical = this.searchHorizontal(index);
-        if (this.hasIdentical(identical)) {
-            return this.deleteEqualHorizontal(identical);
-        }
-        return this.delay()
-    }
-
-    deletes(index, destIndex){
-        this.verticalWork(index).then(() => {
-            return this.verticalWork(destIndex)
-        }).then(() => {
-            return this.horizontalWork(index)
-        }).then(() => {
-            return this.horizontalWork(destIndex)
-        });
+    search(index) {
+        return [
+            this.searchVertical(index),
+            this.searchHorizontal(index)
+        ]
     }
 
     deleteEqualHorizontal(identical) {
         return new Promise((resolve) => {
+            identical.sort((a, b) => {
+                return a < b
+            });
             identical.forEach((index) => {
                 this.collection[index].change("color", 0xffffff);
             });
-            return this.delay(800).then(()=> {
+            // вертикальное удаление провацирует баг
+            return this.delay(800).then(() => {
                 this.change("identical", identical.map((index) =>{
                     const model = this.collection[index];
                     return balles[model.props.type]
                 }));
+                const toDelete = [];
+                const toAdd = [];
 
-                identical.forEach((index)=> {
+                // удалять с обратной стороны
+                for(let i = identical.length - 1; i >= 0; i--) {
+                    const index = identical[i];
                     let firstColIndex = index - (index % GRID_SIZE);
 
                     const newModel = new this.Model({
@@ -139,7 +127,22 @@ export default class Grid extends Collection {
                     this.collection.splice(index, 1);
                     this.collection.splice(firstColIndex, 0, newModel);
                     this.dispatch("add", newModel)
+                }
+/*
+                identical.forEach((index)=> {
+                    let firstColIndex = index - (index % GRID_SIZE);
+
+                    const newModel = new this.Model({
+                        index: firstColIndex,
+                        type: TYPES[randomInteger(2)]
+                    });
+                    //const model = this.collection[index];
+                    //model.change("display", false);
+                    //this.collection.splice(index, 1);
+                    this.collection.splice(firstColIndex, 0, newModel);
+                    this.dispatch("add", newModel)
                 });
+*/
                 this.collection.forEach((model, index) => {
                     model.change("index", index);
                 });
@@ -198,7 +201,7 @@ export default class Grid extends Collection {
         const columnIndex = index % GRID_SIZE;
         const columnNextIndex = nextIndex % GRID_SIZE;
         if(columnNextIndex < columnIndex) {
-            return;
+            return identical;
         }
         if(this.collection[nextIndex] && model.props.type === this.collection[nextIndex].props.type) {
             identical.push(nextIndex);
@@ -214,7 +217,7 @@ export default class Grid extends Collection {
         const columnIndex = index % GRID_SIZE;
         const columnNextIndex = nextIndex % GRID_SIZE;
         if(columnNextIndex > columnIndex) {
-            return;
+            return identical;
         }
 
         if(this.collection[nextIndex] && model.props.type === this.collection[nextIndex].props.type) {

@@ -1,30 +1,39 @@
 import pixi from 'pixi.js'
 
 import View from '../../lib/View'
-import Circle from '../shape/Circle'
-import Rect from '../shape/Rect'
-import Triangle from '../shape/Triangle'
+import Sprite from '../../lib/m3/Sprite'
+import Container from '../../lib/m3/Container'
+import ShapeFactory from '../shape/ShapeFactory'
 import Counter from '../counter/View'
 import CounterModel from '../counter/Model'
 
-
 export const GRID_SIZE = 9;
-export const CELL_SIZE = 25;
-export const TYPES = ["rect", "circle", "triangle"];
+export const CELL_SIZE = 40;
+export const TYPES = [
+    "yellow",
+    "blue",
+    "green",
+    "pink",
+    "red"
+];
 
 export default class Layout extends View {
     constructor(props) {
-        super(props)
+        super(props);
         const model = this.props.model;
 
         this.change = this.change.bind(this);
         this.identical = this.identical.bind(this);
         this.add = this.add.bind(this);
 
-        this.app = new PIXI.Application(240, 280, {backgroundColor : 0x1099bb});
+        this.shapeFactory = new ShapeFactory({
+            width: 10000,
+            height: 10000
+        });
+
+        this.app = new PIXI.Application(400, 440, {backgroundColor : 0x1099bb});
         document.body.appendChild(this.app.view);
         this.container = new PIXI.Container();
-        this.children = [];
         this.counterModel = new CounterModel();
         const counter = this.initCounter();
         this.container.addChild(counter.graphics);
@@ -38,7 +47,7 @@ export default class Layout extends View {
     }
     render() {
         this.children.forEach((child) => {
-            child.render()
+            //child.render()
         })
     }
     initCounter() {
@@ -54,20 +63,11 @@ export default class Layout extends View {
         const config = {
             model,
             container: this.container,
-            //position,
-            onChange: this.change
+            onChange: this.change,
+            ticker: this.app.ticker
         };
-        switch (model.getType()){
-            case 'rect':
-                this.children.push(new Rect(config));
-                break;
-            case 'triangle':
-                this.children.push(new Triangle(config));
-                break;
-            case 'circle':
-                this.children.push(new Circle(config));
-                break;
-        }
+        const shape = this.shapeFactory.create(model.getType(), config);
+        this.container.addChild(shape)
     }
 
     change(eventType, index) {

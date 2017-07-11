@@ -20,7 +20,6 @@ export default class Shape extends View {
         this.graphics = new PIXI.Graphics();
         this.changePosition(this.props.model.getIndex());
         this.render();
-        this.props.container.addChild(this.graphics);
         this.graphics.interactive = true;
         this.graphics.buttonMode = true;
         this.graphics

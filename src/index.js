@@ -8,7 +8,6 @@ const schema = [
     [0,1,2],
     [2,0,1],
     [0,2,1]
-
 ];
 
 window.onload = function(){
@@ -19,22 +18,23 @@ function initialize(){
     const collection = new Grid({Model: Shape});
     let layout = new Layout({model: collection});
 
-    const getTypeId = typeId();
+    const generate = indexGenerator(schema);
 
     for(let i = 0; i < GRID_SIZE; i++) {
         for(let j = 0; j < GRID_SIZE; j++) {
-            let s = getTypeId();
-            let randomShapeType = TYPES[s];
+            let d = randomInteger(4)
+            let shapeType = TYPES[d];
             let model = new Shape({
                 index: i * GRID_SIZE + j,
-                type: randomShapeType
+                type: shapeType
             });
             collection.add(model, i, j);
         }
     }
 }
 
-function typeId(){
+// generate indexes form 0 to 2
+function indexGenerator(schema){
     let index = 0;
     let count = 0;
     let schemaIndex = 0;

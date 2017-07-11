@@ -1,0 +1,97 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Simple Tweening</title>
+	<script src="lib/pixi.js"></script>
+	<script src="lib/tween.js"></script>
+
+</head>
+<body>
+	<div id="container">
+	</div>
+	<script>
+	var stage = new PIXI.Stage(0x000000);
+	var renderer = PIXI.autoDetectRenderer(640, 480);
+	renderer.view.id = "canvas";
+	document.getElementById("container").appendChild(renderer.view);
+	
+	var assetsToLoader = ["bunny.png"];
+	loader = new PIXI.AssetLoader(assetsToLoader);
+	loader.onComplete = onAssetsLoaded
+	loader.load();
+	
+	var bunny1;
+	var bunny2;
+	var bunny3;
+	var bunny4;
+	
+	function onAssetsLoaded(){
+		requestAnimFrame(animate);
+		
+		bunnyTexture = PIXI.Texture.fromImage("bunny.png");
+		// Some bunnies
+		bunny = new PIXI.Sprite(bunnyTexture);
+		stage.addChild(bunny);
+		
+		bunny2 = new PIXI.Sprite(bunnyTexture);
+		bunny2.position.y = 100;
+		stage.addChild(bunny2);
+		
+		bunny3 = new PIXI.Sprite(bunnyTexture);
+		bunny3.position.y = 200;
+		stage.addChild(bunny3);
+		
+		bunny4 = new PIXI.Sprite(bunnyTexture);
+		bunny4.position.y = 300;
+		stage.addChild(bunny4);
+		
+		// BUNNY 1
+		// simple Tween with position.x
+		new Tween(bunny, "position.x", 200, 60, true);
+		
+		
+		// BUNNY 2
+		// simple Tween with bouncing
+		var elasticTweenX = new Tween(bunny2, "position.x", 300, 60, true);
+		var elasticTweenY = new Tween(bunny2, "position.y", 200, 60, true);
+		elasticTweenX.easing = Tween.outCubic;
+		elasticTweenY.easing = Tween.inCubic;
+		
+		
+		// BUNNY 3
+		// chained Tweens.
+		var tween1 = new Tween(bunny3, "position.x", 200, 60, false);
+		tween1.easing = Tween.outElastic;
+		
+		var tween2 = new Tween(bunny3, "rotation", 5, 60, false);
+		tween2.easing = Tween.inQuintic;
+		
+		var tween3 = new Tween(bunny3, "position.x", 100, 60, false);
+		tween3.easing = Tween.inElastic;
+		
+		new ChainedTween([tween1, tween2, tween3]);
+		
+		// BUNNY 4
+		// Tween with callback
+		var tweenWithCallback = new Tween(bunny4, "position.x", 200, 130, true);
+		tweenWithCallback.setOnComplete(onTweenComplete, bunny4);
+	}
+	
+	function onTweenComplete(param){
+		stage.removeChild(param);
+	}
+	
+	function animate() {
+	    requestAnimFrame(animate);
+		// Trigger all Tweens each frame
+		Tween.runTweens();
+	    renderer.render(stage);
+	}
+	
+	
+</script>
+	
+</body>
+</html>
