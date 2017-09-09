@@ -2,9 +2,11 @@ import Collection from '../../lib/Collection'
 import {randomInteger} from '../../lib/helpers'
 import {TYPES, GRID_SIZE} from './View'
 const balles = {
-    rect: 10,
-    triangle: 20,
-    circle: 30
+    yellow: 10,
+    green: 20,
+    blue: 30,
+    red: 40,
+    pink: 50
 };
 
 
@@ -18,8 +20,6 @@ export default class Grid extends Collection {
 
         const res1 = this.search(index);
         const res2 = this.search(destIndex);
-        console.log(res1)
-        console.log(res2)
         const results = [...res1, ...res2];
 
         const filteredResults = results.filter((result) => {
@@ -34,7 +34,7 @@ export default class Grid extends Collection {
                 this.searchEach(identicalArr);
             })
         } else {
-            //this.delay(500).then(() => this.swap(destIndex, index))
+            this.delay(500).then(() => this.swap(destIndex, index))
         }
     }
     searchEach(identicalArr){
@@ -106,7 +106,8 @@ export default class Grid extends Collection {
             });
             // вертикальное удаление провацирует баг
             return this.delay(800).then(() => {
-                this.change("identical", identical.map((index) =>{
+                this.change("identical", identical.map((index) => {
+
                     const model = this.collection[index];
                     return balles[model.props.type]
                 }));

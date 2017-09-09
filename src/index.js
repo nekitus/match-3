@@ -2,6 +2,7 @@ import Shape from './app/shape/Model';
 import Grid from './app/grid/Model';
 import Layout, {GRID_SIZE, TYPES} from './app/grid/View';
 import {randomInteger} from './lib/helpers'
+import Tween from './lib/tween'
 
 
 const schema = [
@@ -10,13 +11,25 @@ const schema = [
     [0,2,1]
 ];
 
+const app = new PIXI.Application(400, 440, {backgroundColor : 0x1099bb});
+
 window.onload = function(){
     initialize()
 };
 
-function initialize(){
+export function ticker() {
+    return app.ticker;
+}
+
+function initialize() {
     const collection = new Grid({Model: Shape});
     let layout = new Layout({model: collection});
+    document.body.appendChild(app.view);
+    app.stage.addChild(layout);
+
+    //app.ticker.add(() => {
+        //Tween.runTweens();
+    //});
 
     const generate = indexGenerator(schema);
 
@@ -31,6 +44,7 @@ function initialize(){
             collection.add(model, i, j);
         }
     }
+    console.log(collection)
 }
 
 // generate indexes form 0 to 2

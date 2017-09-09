@@ -1,5 +1,6 @@
 import Sprite from './Sprite'
 import Tween from '../tween'
+import {ticker} from '../../index.js'
 import {
     CELL_SIZE,
     GRID_SIZE
@@ -46,8 +47,7 @@ export default class Shape extends Sprite {
         this.props.model.bind("color",this.changeColor);
         this.props.model.bind("display",this.changeDisplay);
 
-
-        this.props.ticker.add(() => {
+        ticker().add(() => {
             Tween.runTweens();
         });
     }
