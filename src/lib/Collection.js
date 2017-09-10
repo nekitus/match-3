@@ -1,24 +1,24 @@
 let some =  mixins => target => mixin(target.prototype, mixins);
 
 export default class Collection {
-    constructor(props){
+    constructor(props) {
         this.listeners = [];
 
         this.Model = props.Model;
         this.collection = [];
     }
 
-    add(){
+    add() {
         let [model, ...args] = arguments;
         this.collection.push(model);
         this.dispatch("add", model, ...args)
     }
 
-    change(name, value){
+    change(name, value) {
         this.dispatch(name, value)
     }
 
-    dispatch(){
+    dispatch() {
         let [name, value, ...args] = arguments;
         this.listeners.forEach((listener) => {
             if (listener.name === name) {
@@ -31,7 +31,7 @@ export default class Collection {
         this.listeners.push({name, handler})
     }
 
-    swap(index, destIndex){
+    swap(index, destIndex) {
         const destModel = this.collection[destIndex];
         this.collection[destIndex] = this.collection[index];
         this.collection[index] = destModel;

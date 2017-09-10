@@ -5,7 +5,7 @@ import {
 } from "../app/grid/View";
 
 export default class Shape extends View {
-    constructor(props){
+    constructor(props) {
         super(props);
         this.onDragStart = this.onDragStart.bind(this);
         this.onDragEnd = this.onDragEnd.bind(this);
@@ -34,15 +34,15 @@ export default class Shape extends View {
         this.props.model.bind("color",this.changeColor);
         this.props.model.bind("display",this.changeDisplay);
     }
-    changeDisplay(value){
+    changeDisplay(value) {
         this.display = value;
         this.render();
     }
-    changeColor(value){
+    changeColor(value) {
         this.color = value;
         this.render();
     }
-    changePosition(value){
+    changePosition(value) {
         const column = Math.floor(value / 9);
         const row = value % 9;
         this.position.x = CELL_SIZE * column;
@@ -51,7 +51,7 @@ export default class Shape extends View {
         this.graphics.y = this.position.y;
     }
 
-    onDragStart(event){
+    onDragStart(event) {
         // store a reference to the data
         // the reason for this is because of multitouch
         // we want to track the movement of this particular touch
@@ -85,7 +85,7 @@ export default class Shape extends View {
         }
     }
 
-    onDragEnd(event){
+    onDragEnd(event) {
         this.alpha = 1;
         this.dragging = false;
         // set the interaction data to null

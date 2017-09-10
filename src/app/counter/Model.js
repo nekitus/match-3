@@ -4,13 +4,13 @@ export default class CounterModel extends Model {
         super(props);
         this.summ = 0
     }
-    addPoints(arr){
+    addPoints(arr) {
         let result = arr.reduce(add, 0);
         this.summ += result;
         this.change("summ", this.summ)
     }
 
-    getPoints(){
+    getPoints() {
         return this.summ
     }
 }

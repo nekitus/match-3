@@ -37,13 +37,13 @@ export default class Grid extends Collection {
             this.delay(500).then(() => this.swap(destIndex, index))
         }
     }
-    searchEach(identicalArr){
+    searchEach(identicalArr) {
         this.searchFromHead(identicalArr.pop()).then(() => {
             identicalArr.length && this.searchEach(identicalArr)
         })
     }
 
-    searchFromHead(index){
+    searchFromHead(index) {
         return new Promise((resolve, reject) => {
             const results = [
                 this.searchVertical(index),
@@ -152,7 +152,7 @@ export default class Grid extends Collection {
         });
     }
 
-    deleteEqualVertical(currentIndex, identical){
+    deleteEqualVertical(currentIndex, identical) {
         return new Promise((resolve, reject) => {
             if(this.hasIdentical(identical)){
                 identical.sort((a,b) => a > b);
@@ -184,15 +184,15 @@ export default class Grid extends Collection {
         });
     }
 
-    hasIdentical(arr){
+    hasIdentical(arr) {
         return arr && arr.length > 2;
     }
 
-    searchVertical(index){
+    searchVertical(index) {
         return this.searchDown(index, this.searchUp(index, [index]));
     }
 
-    searchHorizontal(index){
+    searchHorizontal(index) {
         return this.searchRight(index, this.searchLeft(index, [index]));
     }
 
@@ -212,7 +212,7 @@ export default class Grid extends Collection {
         }
     }
 
-    searchUp(index,  identical = []){
+    searchUp(index,  identical = []) {
         const model = this.collection[index];
         const nextIndex = index - 1;
         const columnIndex = index % GRID_SIZE;
@@ -240,7 +240,7 @@ export default class Grid extends Collection {
         }
     }
 
-    searchRight(index, identical = []){
+    searchRight(index, identical = []) {
         const model = this.collection[index];
         const nextIndex = index + 9;
         if(this.collection[nextIndex] && model.props.type === this.collection[nextIndex].props.type) {

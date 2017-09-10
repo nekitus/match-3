@@ -16,7 +16,7 @@ export default class Counter extends View {
         this.props.container.addChild(this.initBack());
         this.props.model.bind("summ", this.onChange)
     }
-    initBack(){
+    initBack() {
         const graphics = new PIXI.Graphics();
         graphics.beginFill(0xfff);
         graphics.lineStyle(5, 0xffffff);
